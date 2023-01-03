@@ -63,6 +63,7 @@
 #include "synth/mt32synth.h"
 #include "synth/soundfontsynth.h"
 #include "synth/synth.h"
+#include "sharedbuffer.h"
 
 //#define MONITOR_TEMPERATURE
 
@@ -115,6 +116,7 @@ private:
 
 	// Tasks for specific CPU cores
 	void MainTask();
+	void DiatoTask();
 	void UITask();
 	void AudioTask();
 
@@ -123,6 +125,7 @@ private:
 	void UpdateMIDI();
 	void PurgeMIDIBuffers();
 	size_t ReceiveSerialMIDI(u8* pOutData, size_t nSize);
+	size_t ReceiveSharedbuffer(u8* pOutData, size_t nSize);
 	bool ParseCustomSysEx(const u8* pData, size_t nSize);
 
 	void ProcessEventQueue();
@@ -154,6 +157,7 @@ private:
 	CUSBHCIDevice* m_pUSBHCI;
 	FATFS m_USBFileSystem;
 	bool m_bUSBAvailable;
+	sharedbuffer m_sharedbuffer;
 
 	// Networking
 	CNetSubSystem* m_pNet;

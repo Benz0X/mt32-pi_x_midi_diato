@@ -76,7 +76,7 @@ CMT32Pi::CMT32Pi(CI2CMaster* pI2CMaster, CSPIMaster* pSPIMaster, CInterruptSyste
 	  m_pUSBHCI(pUSBHCI),
 	  m_USBFileSystem{},
 	  m_bUSBAvailable(false),
-
+	  m_sharedbuffer(),
 	  m_pNet(nullptr),
 	  m_pNetDevice(nullptr),
 	  m_WLAN(WLANFirmwarePath),
@@ -605,6 +605,9 @@ void CMT32Pi::Run(unsigned nCore)
 		case 2:
 			return AudioTask();
 
+		case 3:
+			return DiatoTask();
+
 		default:
 			break;
 	}
@@ -902,15 +905,16 @@ void CMT32Pi::UpdateMIDI()
 	u8 Buffer[MIDIRxBufferSize];
 
 	// Read MIDI messages from serial device or ring buffer
-	if (m_bSerialMIDIEnabled)
-		nBytes = ReceiveSerialMIDI(Buffer, sizeof(Buffer));
-	else if (m_pUSBSerialDevice)
-	{
-		const int nResult = m_pUSBSerialDevice->Read(Buffer, sizeof(Buffer));
-		nBytes = nResult > 0 ? static_cast<size_t>(nResult) : 0;
-	}
-	else
-		nBytes = m_MIDIRxBuffer.Dequeue(Buffer, sizeof(Buffer));
+	nBytes = ReceiveSharedbuffer(Buffer, sizeof(Buffer));
+	// if (m_bSerialMIDIEnabled)
+	// 	nBytes = ReceiveSerialMIDI(Buffer, sizeof(Buffer));
+	// else if (m_pUSBSerialDevice)
+	// {
+	// 	const int nResult = m_pUSBSerialDevice->Read(Buffer, sizeof(Buffer));
+	// 	nBytes = nResult > 0 ? static_cast<size_t>(nResult) : 0;
+	// }
+	// else
+	// 	nBytes = m_MIDIRxBuffer.Dequeue(Buffer, sizeof(Buffer));
 
 	if (nBytes == 0)
 		return;
@@ -932,6 +936,9 @@ void CMT32Pi::PurgeMIDIBuffers()
 		ParseMIDIBytes(Buffer, nBytes, true);
 
 	while (m_pUSBSerialDevice && (nBytes = m_pUSBSerialDevice->Read(Buffer, sizeof(Buffer))) > 0)
+		ParseMIDIBytes(Buffer, nBytes, true);
+	
+	while (nBytes = ReceiveSharedbuffer(Buffer, sizeof(Buffer)) > 0)
 		ParseMIDIBytes(Buffer, nBytes, true);
 
 	while ((nBytes = m_MIDIRxBuffer.Dequeue(Buffer, sizeof(Buffer))) > 0)
@@ -991,6 +998,30 @@ size_t CMT32Pi::ReceiveSerialMIDI(u8* pOutData, size_t nSize)
 	}
 
 	return static_cast<size_t>(nResult);
+}
+
+size_t CMT32Pi::ReceiveSharedbuffer(u8* pOutData, size_t nSize)
+{
+	// Try to read nSize data from sharedbuffer
+	int readvalue;
+	int nb_read=0;
+	for (size_t i = 0; i < nSize; i++)
+	{
+		readvalue=m_sharedbuffer.read();
+		if(readvalue!=-1){
+			pOutData[i]=(u8)readvalue;
+			nb_read++;
+		} else {
+			break;
+		}
+	}
+	// m_pLogger->Write(MT32PiName, LogWarning, "Read %d bytes from shared buffer ", nb_read);
+	
+	// No data
+	if (nb_read == 0)
+		return 0;
+
+	return static_cast<size_t>(nb_read);
 }
 
 void CMT32Pi::ProcessEventQueue()

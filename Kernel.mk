@@ -36,6 +36,8 @@ OBJS		:=	src/arduino_lib/SSD1306Ascii/src/SSD1306Ascii.o \
 				src/midimonitor.o \
 				src/midiparser.o \
 				src/mt32pi.o \
+				src/diatotask.o \
+				src/sharedbuffer.o \
 				src/net/applemidi.o \
 				src/net/ftpdaemon.o \
 				src/net/ftpworker.o \
@@ -69,7 +71,7 @@ INCLUDE		+=	-I src/arduino_lib/BMP180/src/
 INCLUDE		+=	-I src/arduino_lib/MCP23017/src/
 INCLUDE		+=	-I src/arduino_lib/MIDI_Library/src/
 INCLUDE		+=	-I src/arduino_lib/ArduinoMenu/src/
-INCLUDE		+=	-I src/arduino_lib/cppQueue/
+INCLUDE		+=	-I src/arduino_lib/Queue/src/
 INCLUDE		+=	-I src/arduino/
 
 #
