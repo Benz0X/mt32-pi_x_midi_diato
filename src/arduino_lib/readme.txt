@@ -1,0 +1,1 @@
+This folder contains code from arduino libraries, some modified to compile in the Circle RPI environment
