@@ -1,7 +1,11 @@
+
+
+#ifndef MCP23017_h
+#define MCP23017_h
 #pragma once
 
-#include <Arduino.h>
-#include <Wire.h>
+#include <pi_arduino.h>
+#include <circle/i2cmaster.h>
 
 #define _MCP23017_INTERRUPT_SUPPORT_ ///< Enables support for MCP23017 interrupts.
 
@@ -58,13 +62,13 @@ inline MCP23017Register operator+(MCP23017Register a, MCP23017Port b) {
 class MCP23017
 {
 private:
-	TwoWire* _bus;
+	CI2CMaster* m_I2CMaster;
 	uint8_t _deviceAddr;
 public:
 	/**
 	 * Instantiates a new instance to interact with a MCP23017 at the specified address.
 	 */
-	MCP23017(uint8_t address, TwoWire& bus = Wire);
+	MCP23017(uint8_t address, CI2CMaster* pI2CMaster);
 	~MCP23017();
 #ifdef _DEBUG
 	void debug();
@@ -222,3 +226,4 @@ public:
 
 #endif
 };
+#endif

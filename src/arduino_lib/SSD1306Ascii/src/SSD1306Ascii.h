@@ -23,7 +23,8 @@
  */
 #ifndef SSD1306Ascii_h
 #define SSD1306Ascii_h
-#include "Arduino.h"
+// #include "Arduino.h"
+#include <pi_arduino.h>
 #include "SSD1306init.h"
 #include "fonts/allFonts.h"
 //------------------------------------------------------------------------------
@@ -49,7 +50,7 @@
 #define TICKER_QUEUE_DIM 6
 
 /** Use larger faster I2C code. */
-#define OPTIMIZE_I2C 1
+#define OPTIMIZE_I2C 0
 
 /** If MULTIPLE_I2C_PORTS is nonzero,
     define a constructor with port selection. */
@@ -57,7 +58,7 @@
 // Save memory on AVR. Set nonzero to use alternate I2C or software I2c on AVR.
 #define MULTIPLE_I2C_PORTS 0
 #else  // __AVR__
-#define MULTIPLE_I2C_PORTS 1
+#define MULTIPLE_I2C_PORTS 0
 #endif  // __AVR__
 
 /** AvrI2c uses 400 kHz fast mode if AVRI2C_FASTMODE is nonzero else 100 kHz. */
@@ -85,11 +86,11 @@
  * @param[in] rst Reset pin number.
  */
 inline void oledReset(uint8_t rst) {
-  pinMode(rst, OUTPUT);
-  digitalWrite(rst, LOW);
-  delay(10);
-  digitalWrite(rst, HIGH);
-  delay(10);
+  // pinMode(rst, OUTPUT);
+  // digitalWrite(rst, LOW);
+  // delay(10);
+  // digitalWrite(rst, HIGH);
+  // delay(10);
 }
 //------------------------------------------------------------------------------
 /**
@@ -117,9 +118,8 @@ struct TickerState {
  * @class SSD1306Ascii
  * @brief SSD1306 base class
  */
-class SSD1306Ascii : public Print {
+class SSD1306Ascii  {
  public:
-  using Print::write;
   SSD1306Ascii() {}
 #if INCLUDE_SCROLLING
 //------------------------------------------------------------------------------
@@ -425,16 +425,6 @@ class SSD1306Ascii : public Print {
    *  @brief Add text pointer to display queue.
    *
    * @param[in,out] state Ticker state.
-   * @param[in] str Pointer to String object. Clear queue if nullptr.
-   * @return false if queue is full else true.
-   */
-  bool tickerText(TickerState* state, const String &str) {
-    return tickerText(state, str.c_str());
-  }
-  /**
-   *  @brief Add text pointer to display queue.
-   *
-   * @param[in,out] state Ticker state.
    * @param[in] text Pointer to C string.  Clear queue if nullptr.
    * @return false if queue is full else true.
    */
@@ -453,6 +443,13 @@ class SSD1306Ascii : public Print {
    * @return one for success else zero.
    */
   size_t write(uint8_t c);
+  /**
+   * @brief Print a line.
+   *
+   * @param[in] str The character to display.
+   */
+  void print(const char * str);
+  void println(const char * str);
 
  protected:
   uint16_t fontSize() const;

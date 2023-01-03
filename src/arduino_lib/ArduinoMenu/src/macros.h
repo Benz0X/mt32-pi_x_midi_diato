@@ -15,7 +15,7 @@
   #define MENU_FMT_WRAPS
   #define MENU_IDLE_BKGND
 #endif
-#if defined(ESP8266) | defined(CORE_TEENSY)
+#if defined(ESP8266) | defined(CORE_TEENSY) | 1
   #define typeof(x) __typeof__(x)
 #endif
 #if defined(USE_PGM) || (defined(pgm_read_ptr_near) && !defined(MENU_USERAM))

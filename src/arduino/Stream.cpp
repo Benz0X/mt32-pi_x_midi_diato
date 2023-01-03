@@ -22,7 +22,8 @@
  findMulti/findUntil routines written by Jim Leonard/Xuth
  */
 
-#include "Arduino.h"
+#include <pi_arduino.h>
+#include <circle/timer.h>
 #include "Stream.h"
 
 #define PARSE_TIMEOUT 1000  // default number of milli-seconds to wait
@@ -31,11 +32,11 @@
 int Stream::timedRead()
 {
   int c;
-  _startMillis = millis();
+  _startMillis = CTimer::GetClockTicks()/1000;
   do {
     c = read();
     if (c >= 0) return c;
-  } while(millis() - _startMillis < _timeout);
+  } while(CTimer::GetClockTicks()/1000 - _startMillis < _timeout);
   return -1;     // -1 indicates timeout
 }
 
@@ -43,11 +44,11 @@ int Stream::timedRead()
 int Stream::timedPeek()
 {
   int c;
-  _startMillis = millis();
+  _startMillis = CTimer::GetClockTicks()/1000;
   do {
     c = peek();
     if (c >= 0) return c;
-  } while(millis() - _startMillis < _timeout);
+  } while(CTimer::GetClockTicks()/1000 - _startMillis < _timeout);
   return -1;     // -1 indicates timeout
 }
 

@@ -18,7 +18,6 @@
 */
 
 #include <SFE_BMP180.h>
-#include <Wire.h>
 #include <stdio.h>
 #include <math.h>
 
@@ -29,15 +28,14 @@ SFE_BMP180::SFE_BMP180()
 }
 
 
-char SFE_BMP180::begin()
+char SFE_BMP180::begin(CI2CMaster* pI2CMaster)
 // Initialize library for subsequent pressure measurements
 {
 	double c3,c4,b1;
+    m_I2CMaster = pI2CMaster;
 	
 	// Start up the Arduino's "wire" (I2C) library:
 	
-	Wire.begin();
-
 	// The BMP180 includes factory calibration data stored on the device.
 	// Each device has different numbers, these must be retrieved and
 	// used in the calculations when taking pressure measurements.
@@ -177,22 +175,23 @@ char SFE_BMP180::readBytes(unsigned char *values, char length)
 // values: external array to hold data. Put starting register in values[0].
 // length: number of bytes to read
 {
-	char x;
 
-	Wire.beginTransmission(BMP180_ADDR);
-	Wire.write(values[0]);
-	_error = Wire.endTransmission();
-	if (_error == 0)
-	{
-		Wire.requestFrom(BMP180_ADDR,length);
-		while(Wire.available() != length) ; // wait until bytes are ready
-		for(x=0;x<length;x++)
-		{
-			values[x] = Wire.read();
-		}
-		return(1);
-	}
-	return(0);
+	// Wire.beginTransmission(BMP180_ADDR);
+	// Wire.write(values[0]);
+	// _error = Wire.endTransmission();
+	// if (_error == 0)
+	// {
+	// 	Wire.requestFrom(BMP180_ADDR,length);
+	// 	while(Wire.available() != length) ; // wait until bytes are ready
+	// 	for(x=0;x<length;x++)
+	// 	{
+	// 		values[x] = Wire.read();
+	// 	}
+	// 	return(1);
+	// }
+	m_I2CMaster->Write(BMP180_ADDR,values, 1);
+	m_I2CMaster->Read(BMP180_ADDR,values, length);
+	return(1);
 }
 
 
@@ -201,15 +200,14 @@ char SFE_BMP180::writeBytes(unsigned char *values, char length)
 // values: external array of data to write. Put starting register in values[0].
 // length: number of bytes to write
 {
-	char x;
-	
-	Wire.beginTransmission(BMP180_ADDR);
-	Wire.write(values,length);
-	_error = Wire.endTransmission();
-	if (_error == 0)
-		return(1);
-	else
-		return(0);
+	// Wire.beginTransmission(BMP180_ADDR);
+	// Wire.write(values,length);
+	// _error = Wire.endTransmission();
+	// if (_error == 0)
+	// 	return(1);
+	// else
+	m_I2CMaster->Write(BMP180_ADDR,values, length);
+	return(1);
 }
 
 

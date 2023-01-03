@@ -4,7 +4,22 @@
 
 include Config.mk
 
-OBJS		:=	src/config.o \
+OBJS		:=	src/arduino_lib/SSD1306Ascii/src/SSD1306Ascii.o \
+				src/arduino_lib/BMP180/src/SFE_BMP180.o \
+				src/arduino_lib/MCP23017/src/MCP23017.o \
+				src/arduino_lib/MIDI_Library/src/MIDI.o \
+				src/arduino_lib/ArduinoMenu/src/menu.o \
+				src/arduino_lib/ArduinoMenu/src/menuBase.o \
+				src/arduino_lib/ArduinoMenu/src/menuIo.o \
+				src/arduino_lib/ArduinoMenu/src/items.o \
+				src/arduino_lib/ArduinoMenu/src/nav.o \
+				src/arduino_lib/Queue/src/cppQueue.o \
+				src/arduino/Stream.o \
+				src/arduino/Print.o \
+				src/arduino/WString.o \
+				src/arduino/itoa.o \
+				src/arduino/avr/dtostrf.o \
+				src/config.o \
 				src/control/control.o \
 				src/control/mister.o \
 				src/control/rotaryencoder.o \
@@ -34,11 +49,28 @@ OBJS		:=	src/config.o \
 				src/zoneallocator.o
 
 EXTRACLEAN	+=	src/*.d src/*.o \
+				src/arduino_lib/SSD1306Ascii/src/*.d src/arduino_lib/SSD1306Ascii/src/*.o \
+				src/arduino_lib/BMP180/src/*.d src/arduino_lib/BMP180/src/*.o \
+				src/arduino_lib/MCP23017/src/*.d src/arduino_lib/MCP23017/src/*.o \
+				src/arduino_lib/MIDI_Library/src/*.d src/arduino_lib/MIDI_Library/src/*.o \
+				src/arduino_lib/ArduinoMenu/src/*.d src/arduino_lib/ArduinoMenu/src/*.o \
+				src/arduino_lib/cppQueue/src/*.d src/arduino_lib/cppQueue/*.o \
+				src/arduino/*.d src/arduino/*.o \
 				src/control/*.d src/control/*.o \
 				src/lcd/*.d src/lcd/*.o \
 				src/lcd/drivers/*.d src/lcd/drivers/*.o \
 				src/net/*.d src/net/*.o \
 				src/synth/*.d src/synth/*.o
+
+
+
+INCLUDE		+=	-I src/arduino_lib/SSD1306Ascii/src/
+INCLUDE		+=	-I src/arduino_lib/BMP180/src/
+INCLUDE		+=	-I src/arduino_lib/MCP23017/src/
+INCLUDE		+=	-I src/arduino_lib/MIDI_Library/src/
+INCLUDE		+=	-I src/arduino_lib/ArduinoMenu/src/
+INCLUDE		+=	-I src/arduino_lib/cppQueue/
+INCLUDE		+=	-I src/arduino/
 
 #
 # inih
@@ -50,7 +82,7 @@ EXTRACLEAN	+=	$(INIHHOME)/ini.d \
 
 include $(CIRCLEHOME)/Rules.mk
 
-CFLAGS		+=	-Werror -Wextra -Wno-unused-parameter
+CFLAGS		+=	-Wextra -Wno-unused-parameter -fpermissive -Wno-cast-function-type
 
 CFLAGS		+=	-I "$(NEWLIBDIR)/include" \
 				-I $(STDDEF_INCPATH) \

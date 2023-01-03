@@ -1,7 +1,8 @@
 /* -*- C++ -*- */
 #pragma once
 
-#include <Arduino.h>
+// #include <Arduino.h>
+#include <pi_arduino.h>
 // #define MENU_ASYNC
 // #define MENU_FMT_WRAPS
 // #define USE_PGM

@@ -24,7 +24,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
-#include "Arduino.h"
+// #include "Arduino.h"
 
 #include "Print.h"
 
@@ -41,10 +41,10 @@ size_t Print::write(const uint8_t *buffer, size_t size)
   return n;
 }
 
-size_t Print::print(const __FlashStringHelper *ifsh)
-{
-  return print(reinterpret_cast<const char *>(ifsh));
-}
+// size_t Print::print(const __FlashStringHelper *ifsh)
+// {
+//   return print(reinterpret_cast<const char *>(ifsh));
+// }
 
 size_t Print::print(const String &s)
 {
@@ -103,12 +103,12 @@ size_t Print::print(double n, int digits)
   return printFloat(n, digits);
 }
 
-size_t Print::println(const __FlashStringHelper *ifsh)
-{
-  size_t n = print(ifsh);
-  n += println();
-  return n;
-}
+// size_t Print::println(const __FlashStringHelper *ifsh)
+// {
+//   size_t n = print(ifsh);
+//   n += println();
+//   return n;
+// }
 
 size_t Print::print(const Printable& x)
 {

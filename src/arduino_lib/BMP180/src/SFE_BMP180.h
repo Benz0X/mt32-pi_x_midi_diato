@@ -19,19 +19,16 @@
 
 #ifndef SFE_BMP180_h
 #define SFE_BMP180_h
+#include <pi_arduino.h>
+#include <circle/i2cmaster.h>
 
-#if defined(ARDUINO) && ARDUINO >= 100
-#include "Arduino.h"
-#else
-#include "WProgram.h"
-#endif
 
 class SFE_BMP180
 {
 	public:
 		SFE_BMP180(); // base type
 
-		char begin();
+		char begin(CI2CMaster* pI2CMaster);
 			// call pressure.begin() to initialize BMP180 before use
 			// returns 1 if success, 0 if failure (bad component or I2C bus shorted?)
 		
@@ -76,8 +73,8 @@ class SFE_BMP180
 			// 3 = Received NACK on transmit of data
 			// 4 = Other error
 
-	private:
 	
+	private:
 		char readInt(char address, int16_t &value);
 			// read an signed int (16 bits) from a BMP180 register
 			// address: BMP180 register address
@@ -101,7 +98,8 @@ class SFE_BMP180
 			// values: array of char with register address in first location [0]
 			// length: number of bytes to write
 			// returns 1 for success, 0 for fail
-			
+  		
+		CI2CMaster* m_I2CMaster;
 		int16_t AC1,AC2,AC3,VB1,VB2,MB,MC,MD;
 		uint16_t AC4,AC5,AC6; 
 		double c5,c6,mc,md,x0,x1,x2,y0,y1,y2,p0,p1,p2;

@@ -382,3 +382,27 @@ size_t SSD1306Ascii::write(uint8_t ch) {
   setRow(srow);
   return 1;
 }
+
+
+void SSD1306Ascii::print(const char * str){
+  uint16_t i=0;
+  uint8_t c;
+  do{
+    c=(uint8_t)str[i];
+    write(c);
+    i++;
+  } while(c!='\0');
+}
+
+void SSD1306Ascii::println(const char * str){
+  uint16_t i=0;
+  uint8_t c;
+  do{
+    c=(uint8_t)str[i];
+    if(c=='\0'){
+      write('\n');
+    }
+    write(c);
+    i++;
+  } while(c!='\0');
+}

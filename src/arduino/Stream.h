@@ -22,6 +22,7 @@
 #ifndef Stream_h
 #define Stream_h
 
+#include <pi_arduino.h>
 #include <inttypes.h>
 #include "Print.h"
 

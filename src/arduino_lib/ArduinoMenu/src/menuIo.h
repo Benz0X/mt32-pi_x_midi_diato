@@ -4,6 +4,7 @@
 
   #include "menuBase.h"
   #include "shadows.h"
+  #include "Stream.h"
 
   namespace Menu {
     //inline menuOut::styles operator | (menuOut::styles a, menuOut::styles b) {return (menuOut::styles)(a|b);}

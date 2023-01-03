@@ -12,7 +12,6 @@ www.r-site.net
 // #define MENU_DEBUG
 //DRAW_2D adds 260 bytes to flash
 //#define DRAW_2D
-
 #ifndef RSITE_ARDUINO_MENU_SYSTEM_BASE
   #define RSITE_ARDUINO_MENU_SYSTEM_BASE
 
@@ -24,7 +23,8 @@ www.r-site.net
     extern const char* libMemMode;
   #endif
 
-  #include <Arduino.h>
+  #include <Stream.h>
+  // #include <Arduino.h>
   #ifndef assert
     #define assert(x)
   #endif
