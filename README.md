@@ -1,4 +1,4 @@
-# This is a fork of the [MT32-PI](https://github.com/dwhinham/mt32-pi) project, this readme will only list the differencies and specifics of my projects, visit the original project page for more informations
+# This is a fork of the [MT32-PI](https://github.com/dwhinham/mt32-pi) project, this readme will only list the differences and specifics of my project, visit the original project page for more informations about MT32-PI
 
 In this project, I integrated the work from my [previous arduino+RPI based MIDI instrument](https://github.com/Benz0X/midi_diatonic_accordion) into the MT32-PI software in order to have a bare metal raspberry pi software that synthetise audio and ALSO does the MIDI signal generation (thus removing the need of an Arduino, reducing latency and simplificating the wiring).
 

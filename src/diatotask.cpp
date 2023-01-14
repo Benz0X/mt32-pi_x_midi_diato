@@ -110,9 +110,12 @@ const char MT32PiName[] = MT32_PI_NAME;
 #define COLUMN_NUMBER_L 4
 
 //Other keys
-#define KEY_MENU 9
-#define KEY_MISC 10
-
+#define MISSING_KEY_1 15
+#define MISSING_KEY_2 17
+#define MENU_KEY_COL 2
+#define MENU_KEY_ROW 10
+#define LOOP_KEY_COL 1
+#define LOOP_KEY_ROW 11
 //Useful define
 #define PUSH 1
 #define NOPUSH 2
@@ -130,10 +133,10 @@ uint8_t  keys_lh_row[COLUMN_NUMBER_L];
 
 
 //Contain the information 'is button pressed ?' for right keyboard
-bool R_press[COLUMN_NUMBER_R][ROW_NUMBER_R];
+bool R_press[COLUMN_NUMBER_R][ROW_NUMBER_R+1];
 bool L_press[COLUMN_NUMBER_L][ROW_NUMBER_L];
 //Contain the information 'was button pressed last iteration?' for left keyboard
-bool R_prev_press[COLUMN_NUMBER_R][ROW_NUMBER_R];
+bool R_prev_press[COLUMN_NUMBER_R][ROW_NUMBER_R+1];
 bool L_prev_press[COLUMN_NUMBER_L][ROW_NUMBER_L];
 
 //Contains notes to play, this use a bit more memory than using lists with not to play/remove but Arduino Due can afford it and it prevent glitchs when same note is played several time
@@ -728,8 +731,8 @@ void CMT32Pi::DiatoTask()
     MIDIPI_LOCAL=&MIDIPI;
 
     //GPIO creation for the two missing keys mapped to GPIOs (34 buttons vs 32 on MCP23017)
-	CGPIOPin  missing_key_1 =  CGPIOPin (15, GPIOModeInputPullUp);
-	CGPIOPin  missing_key_2 =  CGPIOPin (17, GPIOModeInputPullUp);
+	CGPIOPin  missing_key_1 =  CGPIOPin (MISSING_KEY_1, GPIOModeInputPullUp);
+	CGPIOPin  missing_key_2 =  CGPIOPin (MISSING_KEY_2, GPIOModeInputPullUp);
 
 	m_pLogger->Write(MT32PiName, LogNotice, "Diato task on Core 3 starting up");
 
@@ -991,7 +994,7 @@ void CMT32Pi::DiatoTask()
         //Menu navigation & presets
         //-----------------------------------
         //For some reason, going low on a FIELD crash the menu, try to avoid it
-        if(R_press[2][10]) {
+        if(R_press[MENU_KEY_COL][MENU_KEY_ROW]) {
             if (R_press[1][9] && ! R_prev_press[1][9]) {
                 strIn.write('+'); //Up
                 nav.doInput(strIn);
@@ -1070,7 +1073,7 @@ void CMT32Pi::DiatoTask()
         //-----------------------------------
         // Prepare MIDI message
         //-----------------------------------
-        if(!R_press[2][10]) {
+        if(!R_press[MENU_KEY_COL][MENU_KEY_ROW]) {
             //Right hand
             for (size_t i = 0; i < COLUMN_NUMBER_R; i++) {
                 for (size_t j = 0; j < ROW_NUMBER_R; j++) {
@@ -1174,7 +1177,7 @@ void CMT32Pi::DiatoTask()
 
         //Send Volume
         if (bellow != NOPUSH) {bellow_prev = bellow;}
-        if(volume_prev!=volume_resolved /* || loop_count%1000==0 */){
+        if(volume_prev!=volume_resolved || loop_count%200==0){
             midi_broadcast_control_change(MIDI_CC_VOLUME, volume_resolved, channel_lh);
             midi_broadcast_control_change(MIDI_CC_VOLUME, volume_resolved, channel_rh);
             if(vibrato!=0){
