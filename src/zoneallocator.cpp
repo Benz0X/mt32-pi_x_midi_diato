@@ -27,7 +27,7 @@
 #include "utility.h"
 #include "zoneallocator.h"
 
-constexpr size_t MallocHeapSize = 32 * MEGABYTE;
+constexpr size_t MallocHeapSize = 256 * MEGABYTE; //Leave more RAM for other stuff
 
 const char ZoneAllocatorName[] = "zoneallocator";
 

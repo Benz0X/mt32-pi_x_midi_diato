@@ -219,7 +219,8 @@ char str_oled[128/fontW];
 uint32_t loop_count=0;
 uint32_t max_count=0;
 
-
+//loop stuff
+uint8_t loop_state=0; //0=IDLE, 1=RECORD, 2=OVERDUB
 //pressure stuff
 uint8_t volume, volume_resolved, volume_prev;
 uint8_t expression_resolved=127;
@@ -972,7 +973,7 @@ void CMT32Pi::DiatoTask()
         // oled.print(str_oled);
 
         for(uint8_t i=0;i<COLUMN_NUMBER_R;i++){
-            for(uint8_t j=0;j<ROW_NUMBER_R;j++){
+            for(uint8_t j=0;j<ROW_NUMBER_R+1;j++){
                 R_press[i][j]=(keys_rh_row[i] & (1<<(j)))>>(j);
             }
         }
@@ -984,7 +985,19 @@ void CMT32Pi::DiatoTask()
             }
         }
 
-
+        if(R_press[LOOP_KEY_COL][LOOP_KEY_ROW] & !R_prev_press[LOOP_KEY_COL][LOOP_KEY_ROW]){
+            m_loopcommandbuffer.write(1);
+            loop_state++;
+            loop_state%=3;
+            oled.setCursor((128-2*fontW), 5);
+            if(loop_state==0){
+                    oled.print("I");
+            } else if(loop_state==1){
+                    oled.print("R");
+            } else if(loop_state==2){
+                    oled.print("O");
+            }
+        }
 
         #ifdef DEBUG
         if(micros()-t__dbg_temp>t__dbg_key){t__dbg_key=micros()-t__dbg_temp;}

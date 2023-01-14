@@ -158,6 +158,7 @@ private:
 	FATFS m_USBFileSystem;
 	bool m_bUSBAvailable;
 	sharedbuffer m_sharedbuffer;
+	sharedbuffer m_loopcommandbuffer; //we could use more efficient way of communication but i'm lazy
 
 	// Networking
 	CNetSubSystem* m_pNet;

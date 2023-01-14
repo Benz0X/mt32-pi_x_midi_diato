@@ -77,6 +77,7 @@ CMT32Pi::CMT32Pi(CI2CMaster* pI2CMaster, CSPIMaster* pSPIMaster, CInterruptSyste
 	  m_USBFileSystem{},
 	  m_bUSBAvailable(false),
 	  m_sharedbuffer(),
+	  m_loopcommandbuffer(),
 	  m_pNet(nullptr),
 	  m_pNetDevice(nullptr),
 	  m_WLAN(WLANFirmwarePath),
@@ -559,24 +560,102 @@ void CMT32Pi::AudioTask()
 	m_pLogger->Write(MT32PiName, LogNotice, "Audio task on Core 2 starting up");
 
 	constexpr u8 nChannels = 2;
+	int readvalue;
+	int recording=0;
+	int playing=0;
+	int writepointer=0;
+	int endpointer=0;
+	int readpointer=0;
 
 	// Circle's "fast path" for I2S 24-bit really expects 32-bit samples
 	const bool bI2S = m_pConfig->AudioOutputDevice == CConfig::TAudioOutputDevice::I2S;
 	const u8 nBytesPerSample = bI2S ? sizeof(s32) : (sizeof(s8) * 3);
-	const u8 nBytesPerFrame = 2 * nBytesPerSample;
+	const u8 nBytesPerFrame = 2 * nBytesPerSample; //twice becuse stereo (probably)
 
 	const size_t nQueueSizeFrames = m_pSound->GetQueueSizeFrames();
 
 	// Extra byte so that we can write to the 24-bit buffer with overlapping 32-bit writes (efficiency)
 	float FloatBuffer[nQueueSizeFrames * nChannels];
+
+	//you can use this to get how much mem is avail
+	// CMemorySystem* pMemorySystem = CMemorySystem::Get();
+	// size_t m_nHeapSize = pMemorySystem->GetHeapFreeSpace(HEAP_LOW);
+	// m_pLogger->Write(MT32PiName, LogNotice, "Free memory: %d megabyte heap", m_nHeapSize / MEGABYTE);
+	
+	//around 200MB available--> we have plenty of space
+	const u32 loopBuffSize=2*48000*240; //240 seconds @48kHz buffer for loops, more if lower sample rate, this takes 92MB
+	
+	
+	constexpr size_t MallocHeapSize = 32 * MEGABYTE;
+
+	
+	// float loopBuffer[loopBuffSize];
+	float* loopBuffer;
+	loopBuffer=(float *)malloc(loopBuffSize*sizeof(float));
+	if(loopBuffer==NULL){
+		//malloc failed
+		m_pLogger->Write(MT32PiName, LogError, "malloc failed !");
+		while (1);
+	}
+	memset(loopBuffer,0,sizeof(loopBuffer));
 	s8 IntBuffer[nQueueSizeFrames * nBytesPerFrame + bI2S ? 0 : 1];
 
 	while (m_bRunning)
 	{
 		const size_t nFrames = nQueueSizeFrames - m_pSound->GetQueueFramesAvail();
 		const size_t nWriteBytes = nFrames * nBytesPerFrame;
+		const size_t nSample = nFrames * nChannels;
 
 		m_pCurrentSynth->Render(FloatBuffer, nFrames);
+
+
+		//-----------------------
+		//LOOPER
+		//-----------------------
+		//See if we have looper command in the buff, advance FSM if we do
+		readvalue=m_loopcommandbuffer.read();
+		if(readvalue!=-1){ //Small FSM IDLE-->REC-->PLAY
+			if(recording==0 && playing == 0){
+				// m_pLogger->Write(MT32PiName, LogNotice, "DBGDBG start loop record");
+				recording=1;
+				writepointer=0;
+			} else if(recording==1){
+				// m_pLogger->Write(MT32PiName, LogNotice, "DBGDBG start loop playback");
+				endpointer=writepointer;
+				recording=0;
+				playing=1;
+				readpointer=0;
+			} else {
+				// m_pLogger->Write(MT32PiName, LogNotice, "DBGDBG stop loop");
+				playing=0;
+			}
+		}
+		//Avoid record overflow
+		if(writepointer+nSample>=loopBuffSize){
+			// m_pLogger->Write(MT32PiName, LogNotice, "Record overflow, reset writepointer");
+			writepointer=0;
+		}
+		if(recording){
+			for (size_t i = 0; i < nSample; i++)
+			{
+				loopBuffer[writepointer+i]=FloatBuffer[i];
+			}
+			writepointer+= nSample;
+		}
+		if(playing){
+			for (size_t i = 0; i < nSample; i++)
+			{
+				FloatBuffer[i]+=loopBuffer[readpointer+i];
+			}
+			readpointer+=nSample;
+			//Reset if > recording size or total size
+			if(readpointer>=endpointer || readpointer>=loopBuffSize){
+				// m_pLogger->Write(MT32PiName, LogNotice, "playback overflow, reset readpointer");
+				readpointer=0;
+			}
+		}
+
+
 
 		// Convert to signed 24-bit integers
 		for (size_t i = 0; i < nFrames * nChannels; ++i)
@@ -585,6 +664,7 @@ void CMT32Pi::AudioTask()
 			*pSample = FloatBuffer[i] * Sample24BitMax;
 		}
 
+		//Send the audio data to the I2C
 		const int nResult = m_pSound->Write(IntBuffer, nWriteBytes);
 		if (nResult != static_cast<int>(nWriteBytes))
 			m_pLogger->Write(MT32PiName, LogError, "Sound data dropped");
