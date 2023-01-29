@@ -50,7 +50,7 @@
 #define TICKER_QUEUE_DIM 6
 
 /** Use larger faster I2C code. */
-#define OPTIMIZE_I2C 0
+#define OPTIMIZE_I2C 1
 
 /** If MULTIPLE_I2C_PORTS is nonzero,
     define a constructor with port selection. */

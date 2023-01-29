@@ -13,11 +13,10 @@ Two main issues were present:
 
 As a bonus, thanks to the embeded FTP server, it is possible to make over the air updates to the software, configuration files or soundfonts!
 
+# New functionnalities
+As the RPI has plenty of memory available, an audio looper is implemented (basic Record/Overdub with only 1 layer of loop). It allows to superpose sounds from the same of different soundfonts (to investigate: audio glitches sometime happens when switching soundfonts)
+
 # TODO
 Bring back MIDI through USB ! As the RPI does not have an UART to USB bridge on it's power port, this functionnality has been broken.
 However, it should be easy to implement using an UART to USB adapter or using an arduino or a microcontroller to do it.
 
-# Improvement
-Implement a sequencer: one core doesn't do anything, it shouldn't be hard to memorize the midi signals generated and send them to the synth in loop. This would allow some nice looping
-
-Bring back I2C optimised transfer for the screen to improve its refresh rate

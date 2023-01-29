@@ -78,24 +78,28 @@ class SSD1306AsciiWire : public SSD1306Ascii {
 
  protected:
   void writeDisplay(uint8_t b, uint8_t mode) {
-    uint8_t buffer[2];
 #if OPTIMIZE_I2C
     if (m_nData > 16 || (m_nData && mode == SSD1306_MODE_CMD)) {
-      m_oledWire.endTransmission();
+      m_I2CMaster->Write(m_i2cAddr,i2c_buff, m_nData);
+      // m_oledWire.endTransmission();
       m_nData = 0;
     }
     if (m_nData == 0) {
-      m_oledWire.beginTransmission(m_i2cAddr);
-      m_oledWire.write(mode == SSD1306_MODE_CMD ? 0X00 : 0X40);
-    }
-    m_oledWire.write(b);
-    if (mode == SSD1306_MODE_RAM_BUF) {
+      // m_oledWire.beginTransmission(m_i2cAddr);
+      i2c_buff[m_nData]=mode == SSD1306_MODE_CMD ? 0X00 : 0X40;
       m_nData++;
-    } else {
-      m_oledWire.endTransmission();
+      // m_oledWire.write(mode == SSD1306_MODE_CMD ? 0X00 : 0X40);
+    }
+    i2c_buff[m_nData]=b;
+    m_nData++;
+    // m_oledWire.write(b);
+    if (mode != SSD1306_MODE_RAM_BUF) {
+      m_I2CMaster->Write(m_i2cAddr,i2c_buff, m_nData);
+      // m_oledWire.endTransmission();
       m_nData = 0;
     }
 #else  // OPTIMIZE_I2C
+    uint8_t buffer[2];
     buffer[0]=(mode == SSD1306_MODE_CMD ? 0X00: 0X40);
     buffer[1]=b;
     m_I2CMaster->Write(m_i2cAddr,buffer, 2);
@@ -110,6 +114,7 @@ class SSD1306AsciiWire : public SSD1306Ascii {
   CI2CMaster* m_I2CMaster;
 #if OPTIMIZE_I2C
   uint8_t m_nData;
+  uint8_t i2c_buff[17];
 #endif  // OPTIMIZE_I2C
 };
 #endif  // SSD1306AsciiWire_h
