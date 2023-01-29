@@ -116,6 +116,8 @@ const char MT32PiName[] = MT32_PI_NAME;
 #define MENU_KEY_ROW 10
 #define LOOP_KEY_COL 1
 #define LOOP_KEY_ROW 11
+uint8_t bonus_left_key=0;
+uint8_t bonus_left_key_prev=0;
 //Useful define
 #define PUSH 1
 #define NOPUSH 2
@@ -125,8 +127,8 @@ const char MT32PiName[] = MT32_PI_NAME;
 //Global variables
 //-----------------------------------
 //Contains pressed keys
-uint32_t keys_rh;
-uint32_t keys_lh;
+volatile uint32_t keys_rh;
+volatile uint32_t keys_lh;
 uint16_t keys_rh_row[COLUMN_NUMBER_R];
 uint16_t keys_rh_row_raw[COLUMN_NUMBER_R];
 uint8_t  keys_lh_row[COLUMN_NUMBER_L];
@@ -926,6 +928,10 @@ void CMT32Pi::DiatoTask()
             volume = 100 - volume_attenuation ;
         }
 
+        // volume=30;
+        // bellow_not_null = PUSH;
+        // bellow=PUSH;
+        // bellow_prev=PUSH;
         //-----------------------------------
         // Key acquisition from MCP
         //-----------------------------------
@@ -947,7 +953,8 @@ void CMT32Pi::DiatoTask()
         keys_lh =   (uint32_t)read_burst16_mcp(MCP23017_LH_0_SUB_ADDRESS, m_pI2CMaster)&0xffff;
         keys_lh |= ((uint32_t)read_burst16_mcp(MCP23017_LH_1_SUB_ADDRESS, m_pI2CMaster)&0xffff)<<16;
 
-
+        bonus_left_key_prev=bonus_left_key;
+        bonus_left_key= (keys_lh & 0x2) == 0 ? 1 : 0;
 
         //Conversion to rows, then to R_press (bool)
         keys_rh_row_raw[0] =  (keys_rh & 0x7FF);
@@ -985,7 +992,7 @@ void CMT32Pi::DiatoTask()
             }
         }
 
-        if(R_press[LOOP_KEY_COL][LOOP_KEY_ROW] & !R_prev_press[LOOP_KEY_COL][LOOP_KEY_ROW]){
+        if(bonus_left_key & !bonus_left_key_prev){
             m_loopcommandbuffer.write(1);
             loop_state++;
             loop_state%=3;
