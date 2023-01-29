@@ -566,7 +566,8 @@ void CMT32Pi::AudioTask()
 	int writepointer=0;
 	int endpointer=0;
 	int readpointer=0;
-
+	float softmute_coeff=0; //We do a linear volume increase on the first 50ms samples (2*1600@32kHz)
+	constexpr uint16_t softmute_nb_sample=3200;
 	// Circle's "fast path" for I2S 24-bit really expects 32-bit samples
 	const bool bI2S = m_pConfig->AudioOutputDevice == CConfig::TAudioOutputDevice::I2S;
 	const u8 nBytesPerSample = bI2S ? sizeof(s32) : (sizeof(s8) * 3);
@@ -643,9 +644,17 @@ void CMT32Pi::AudioTask()
 			writepointer+= nSample;
 		}
 		if(playing){
+
 			for (size_t i = 0; i < nSample; i++)
 			{
-				FloatBuffer[i]+=loopBuffer[readpointer+i];
+				if(readpointer+i<softmute_nb_sample){
+					softmute_coeff=(float)(readpointer+i)/(float)softmute_nb_sample;
+				} else if(readpointer+i>endpointer-softmute_nb_sample){
+					softmute_coeff=(float)(endpointer-(readpointer+i))/(float)softmute_nb_sample;
+				} else {
+					softmute_coeff=1.0;
+				}
+				FloatBuffer[i]+=(loopBuffer[readpointer+i]*softmute_coeff);
 			}
 			readpointer+=nSample;
 			//Reset if > recording size or total size
